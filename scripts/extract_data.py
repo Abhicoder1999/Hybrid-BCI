@@ -31,7 +31,7 @@ def segment (data,Fs):
     k = (tmax-tmin)/3
     t1 = k + tmin
     t2 = 2*k + tmin
-    wlen = k//2;
+    wlen = k//1.5;
 
     aseg = data[(data["time"]>=tmin+wlen/2.0) & (data["time"]<=t1-wlen/2.0)]
     useg = data[(data["time"]>t1+wlen/2.0) & (data["time"]<=t2-wlen/2.0)]
@@ -108,8 +108,16 @@ def sdesign(tdata,Fs):
 def ICA():
     pass
 
-#####Data Extraction
-file = scipy.io.loadmat('../data/EEG_Data/eeg_record9.mat')
+def store_spect(x,Fs,filename):
+    for i in range(x.shape[1]):    
+        s = spectro(x[:,i],Fs)
+        image.imsave(filename +'ch'+ str(i) + '.png', s)
+    pass
+    
+    
+
+    #####Data Extraction
+file = scipy.io.loadmat('../data/EEG_Data/eeg_record3.mat')
 mdata = file["o"]
 mtype = mdata.dtype
 ndata = {n: mdata[n][0,0] for n in mtype.names}
@@ -117,6 +125,7 @@ ndata = {n: mdata[n][0,0] for n in mtype.names}
 Fs = ndata["sampFreq"][0][0]
 data_raw = ndata["data"]
 marker = ndata["marker"]
+plt.plot(marker)
 tmstamp = ndata["timestamp"]
 trials = ndata["trials"][0,:,:,:]
 
@@ -125,36 +134,42 @@ trials = ndata["trials"][0,:,:,:]
 data = pd.DataFrame(data_raw)
 
 segments = segment(data,tmstamp)
-
+    
 data = np.array(data)
-aseg = np.array(segments[0].iloc[0:50000 , 3:17])
-useg = np.array(segments[1].iloc[0:50000 , 3:17])
-sseg = np.array(segments[2].iloc[0:50000 , 3:17])
+aseg = np.array(segments[0].iloc[:, 3:17])
+useg = np.array(segments[1].iloc[: , 3:17])
+sseg = np.array(segments[2].iloc[: , 3:17])
 
 
-#####Preprocessing
+    #####Preprocessing
 aseg = normalize(aseg)
 useg = normalize(useg)
 sseg = normalize(sseg)
+
+    #fdesign(sseg[:,2],Fs)
 
 xa,ya = preprocessing(aseg,Fs)
 xu,yu = preprocessing(useg,Fs)
 xs,ys = preprocessing(sseg,Fs)
 
-Sa = spectro(xu[:,2],Fs)
+
+    #####Feature Exrtraction
+    #Sa = spectro(xa[:,0],Fs)
+    #sdesign(xu[:,10],Fs)
+    #dualplt(xa[:,4],ya[:,4],Fs)
 
 
-######Storing
+    ######Storing
 
-image.imsave('name2.png', Sa)
-img_load = img.open('name2.png')
+store_spect(xa,Fs,'../spectro/active/exp3')
+store_spect(xu,Fs,'../spectro/unattentive/exp3')
+store_spect(xs,Fs,'../spectro/drowsy/exp3')
 
 
-#sdesign(xs[:,2],Fs)
-#fdesign(sseg[:,2],Fs)
-#dualplt(xa[:,4],ya[:,4],Fs)
+#image.imsave('../spectro/active/name2.png', Sa)
+#img_load = img.open('name2.png')
 
-#####Feature Exrtraction
+
 
 
 #Model Representatino
