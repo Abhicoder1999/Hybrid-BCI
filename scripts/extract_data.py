@@ -14,7 +14,7 @@ import os
 
 
 
-def segment (data,Fs):
+def tm_segment (data,Fs):
 
     data["time"] = tmstamp[:,4]
     l = data.shape[0]
@@ -37,6 +37,18 @@ def segment (data,Fs):
     useg = data[(data["time"]>t1+wlen/2.0) & (data["time"]<=t2-wlen/2.0)]
     sseg = data[(data["time"]>t2+wlen/2.0)&(data["time"]<=tmax-wlen/2.0)]
   
+    return aseg,useg,sseg;
+    
+def mk_segment (data,marker):
+    temp = np.where(marker == 1)[0]
+    ind1 = temp[1];
+    ind2 = temp[len(temp)-2];
+    
+    data = np.array(data)
+    aseg = data[:ind1,:]
+    useg = data[ind1:ind2,:]
+    sseg = data[ind2:,:]
+    
     return aseg,useg,sseg;
 
 def preprocessing(data,Fs):
@@ -117,7 +129,8 @@ def store_spect(x,Fs,filename):
     
 
     #####Data Extraction
-file = scipy.io.loadmat('../data/EEG_Data/eeg_record3.mat')
+exp_name = 21
+file = scipy.io.loadmat('../data/EEG_Data/eeg_record'+str(exp_name)+'.mat')
 mdata = file["o"]
 mtype = mdata.dtype
 ndata = {n: mdata[n][0,0] for n in mtype.names}
@@ -130,15 +143,15 @@ tmstamp = ndata["timestamp"]
 trials = ndata["trials"][0,:,:,:]
 
 
-
 data = pd.DataFrame(data_raw)
 
-segments = segment(data,tmstamp)
+segments = tm_segment(data,tmstamp)
+#segments =  mk_segment(data,marker)
     
-data = np.array(data)
-aseg = np.array(segments[0].iloc[:, 3:17])
-useg = np.array(segments[1].iloc[: , 3:17])
-sseg = np.array(segments[2].iloc[: , 3:17])
+
+aseg = np.array(segments[0])[:, 3:17]
+useg = np.array(segments[1])[: , 3:17]
+sseg = np.array(segments[2])[: , 3:17]
 
 
     #####Preprocessing
@@ -161,9 +174,9 @@ xs,ys = preprocessing(sseg,Fs)
 
     ######Storing
 
-store_spect(xa,Fs,'../spectro/active/exp3')
-store_spect(xu,Fs,'../spectro/unattentive/exp3')
-store_spect(xs,Fs,'../spectro/drowsy/exp3')
+store_spect(xa,Fs,'../spectro/active/exp'+str(exp_name))
+store_spect(xu,Fs,'../spectro/unattentive/exp'+str(exp_name))
+store_spect(xs,Fs,'../spectro/drowsy/exp'+str(exp_name))
 
 
 #image.imsave('../spectro/active/name2.png', Sa)
@@ -178,6 +191,7 @@ store_spect(xs,Fs,'../spectro/drowsy/exp3')
 #Model Training
 
 #Results
+
 '''
 Steps:
 
