@@ -8,8 +8,6 @@ from scipy.signal import butter
 from scipy.signal import sosfilt
 from scipy.signal import spectrogram
 from scipy.ndimage import gaussian_filter
-from PIL import Image as img
-import os
 
 
 
@@ -42,13 +40,22 @@ def tm_segment (data,Fs):
 def mk_segment (data,marker):
     temp = np.where(marker == 1)[0]
     ind1 = temp[1];
-    ind2 = temp[len(temp)-2];
-    
+    ind2 = temp[len(temp)-2]
+    win = len(marker)//12
     data = np.array(data)
-    aseg = data[:ind1,:]
-    useg = data[ind1:ind2,:]
-    sseg = data[ind2:,:]
     
+    i1 = ind1//2-win
+    i2 = ind1//2+win
+    aseg = data[i1:i2,:]
+    print(i1,i2)
+    i1 = (ind1+ind2)//2-win
+    i2 = (ind1+ind2)//2+win    
+    useg = data[i1:i2,:]
+    print(i1,i2)
+    i1 = (ind2+len(marker))//2-win
+    i2 = (ind2+len(marker))//2+win
+    sseg = data[i1:i2,:]
+    print(i1,i2)
     return aseg,useg,sseg;
 
 def preprocessing(data,Fs):
@@ -129,70 +136,69 @@ def store_spect(x,Fs,filename):
     
 
     #####Data Extraction
-exp_name = 21
-file = scipy.io.loadmat('../data/EEG_Data/eeg_record'+str(exp_name)+'.mat')
-mdata = file["o"]
-mtype = mdata.dtype
-ndata = {n: mdata[n][0,0] for n in mtype.names}
+for exp_name in range(1,31):
+    print(exp_name)
+    file = scipy.io.loadmat('../data/EEG_Data/eeg_record'+str(exp_name)+'.mat')
+    mdata = file["o"]
+    mtype = mdata.dtype
+    ndata = {n: mdata[n][0,0] for n in mtype.names}
+     
+    Fs = ndata["sampFreq"][0][0]
+    data_raw = ndata["data"]
+    marker = ndata["marker"]
+    plt.plot(marker)
+    tmstamp = ndata["timestamp"]
+    trials = ndata["trials"][0,:,:,:]
+     
+    data = pd.DataFrame(data_raw)
+    
+    segments = tm_segment(data,tmstamp)
+    #segments =  mk_segment(data,marker)
+        
+    aseg = np.array(segments[0])[:, 3:17]
+    useg = np.array(segments[1])[: , 3:17]
+    sseg = np.array(segments[2])[: , 3:17]
 
-Fs = ndata["sampFreq"][0][0]
-data_raw = ndata["data"]
-marker = ndata["marker"]
-plt.plot(marker)
-tmstamp = ndata["timestamp"]
-trials = ndata["trials"][0,:,:,:]
-
-
-data = pd.DataFrame(data_raw)
-
-segments = tm_segment(data,tmstamp)
-#segments =  mk_segment(data,marker)
+    
+        #####Preprocessing
+    aseg = normalize(aseg)
+    useg = normalize(useg)
+    sseg = normalize(sseg)
+    
+    #fdesign(sseg[:,2],Fs)
+    
+    xa,ya = preprocessing(aseg,Fs)
+    xu,yu = preprocessing(useg,Fs)
+    xs,ys = preprocessing(sseg,Fs)
     
 
-aseg = np.array(segments[0])[:, 3:17]
-useg = np.array(segments[1])[: , 3:17]
-sseg = np.array(segments[2])[: , 3:17]
+        #####Feature Exrtraction
+        #Sa = spectro(xa[:,0],Fs)
+    #sdesign(xa[:,10],Fs)
+        #dualplt(xa[:,4],ya[:,4],Fs)
+    
+    
+        ######Storing
+    
+    store_spect(xa,Fs,'../spectro/active/exp'+str(exp_name))
+    store_spect(xu,Fs,'../spectro/unattentive/exp'+str(exp_name))
+    store_spect(xs,Fs,'../spectro/drowsy/exp'+str(exp_name))
+    
 
+    #image.imsave('../spectro/active/name2.png', Sa)
+    #img_load = img.open('name2.png')
+    
+    
+    
+    
+    #Model Representatino
+    
 
-    #####Preprocessing
-aseg = normalize(aseg)
-useg = normalize(useg)
-sseg = normalize(sseg)
-
-    #fdesign(sseg[:,2],Fs)
-
-xa,ya = preprocessing(aseg,Fs)
-xu,yu = preprocessing(useg,Fs)
-xs,ys = preprocessing(sseg,Fs)
-
-
-    #####Feature Exrtraction
-    #Sa = spectro(xa[:,0],Fs)
-    #sdesign(xu[:,10],Fs)
-    #dualplt(xa[:,4],ya[:,4],Fs)
-
-
-    ######Storing
-
-store_spect(xa,Fs,'../spectro/active/exp'+str(exp_name))
-store_spect(xu,Fs,'../spectro/unattentive/exp'+str(exp_name))
-store_spect(xs,Fs,'../spectro/drowsy/exp'+str(exp_name))
-
-
-#image.imsave('../spectro/active/name2.png', Sa)
-#img_load = img.open('name2.png')
-
-
-
-
-#Model Representatino
-
-
-#Model Training
-
-#Results
-
-'''
+    #Model Training
+    
+    #Results
+    
+    '''
 Steps:
 
 -import all the files data in a loop
