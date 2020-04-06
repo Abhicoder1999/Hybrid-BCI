@@ -1,8 +1,9 @@
 %% Raw Data
+
 clc; close all;clear all;
-[s,h] = sload('./data/B0101T.gdf');
+[s,h] = sload('../BCI-IV-b/B0104T.gdf');
 Fs = h.SampleRate;
-t = 0:1/Fs:length(s);
+t = 0:1/Fs:size(s,1);
 
 typ = h.EVENT.TYP;
 pos = h.EVENT.POS;
@@ -10,9 +11,7 @@ dur = h.EVENT.DUR;
 % art = h.ArtifactSelection;
 
 %% Visualize
-
-
-ind_typ = 770;
+ind_typ = 769+1;
 
 for i = 1:length(typ)
     if typ(i) == ind_typ
@@ -61,18 +60,18 @@ end
 %% Feature Analysis
 
 event = 2;
-d1 = C1_data(:,1:3,event);
+d1 = C1_data(:,1:3,event); % c3 cz c4 
 d2 = C2_data(:,1:3,event);
 
 
 m1 = d1(:,[1 3]);
 m2 = d2(:,[1 3]);
 
-% figure(1)
-% subplot(211)
-% plot(m1)
-% subplot(212)
-% plot(m2)
+figure(1)
+subplot(211)
+plot(m1)
+subplot(212)
+plot(m2)
 
 
 %% Testing
