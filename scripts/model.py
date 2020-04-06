@@ -48,7 +48,7 @@ model = tf.keras.models.Sequential([
   tf.keras.layers.Flatten(),
   tf.keras.layers.Dense(500, activation='relu'),
   tf.keras.layers.Dense(1, activation='softmax')
-])
+])  
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 ##### 

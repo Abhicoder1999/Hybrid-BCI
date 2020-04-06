@@ -1,0 +1,5 @@
+
+
+*.so
+/data/*
+/spectro/*
