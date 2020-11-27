@@ -9,8 +9,13 @@ import pandas as pd
 import scipy.io
 import numpy as np
 
-
 def extract_data(efile,dfile,eno,tfile):
+    '''
+    efile = events type list
+    dfile = data file of all channels
+    eno = event number
+    tfile = appending target file with data
+    '''
     index=[]
     duration=[]
     for i in range(len(efile)):  
@@ -23,7 +28,7 @@ def extract_data(efile,dfile,eno,tfile):
             tfile = np.array(dfile[0:3,index[i]:index[i]+duration[i]])
         else:
             temp = np.array(dfile[0:3,index[i]:index[i]+duration[i]])
-            tfile = np.vstack((tfile,temp))
+            tfile = np.vstack((tfile,temp)) #dynamically appending array
 
     return tfile
 
@@ -42,5 +47,9 @@ for i in range(len(exp_name)):
 
     ldata = extract_data(events,data,769,ldata)
     rdata = extract_data(events,data,770,rdata)
+    print(ldata.shape,rdata.shape)
 
 
+#Storing the extracted data in local
+np.savetxt('../data/csv_file/ldata.csv',ldata,delimiter=',')
+np.savetxt('../data/csv_file/rdata.csv',rdata,delimiter=',')
