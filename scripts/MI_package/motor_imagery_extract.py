@@ -33,13 +33,14 @@ def extract_data(efile,dfile,eno,tfile):
     return tfile
 
 
+
 ldata = []
 rdata = []
 exp_name = [11,12,21,22,31,32,41,42,51,52,61,62,71,72,81,82,91,92];
 for i in range(len(exp_name)):
 #Intialising Variables
     print(exp_name[i])
-    mat = scipy.io.loadmat('../data/MI_data/EEG'+str(exp_name[i])+'.mat')
+    mat = scipy.io.loadmat('../../data/MI_data/EEG'+str(exp_name[i])+'.mat')
     data = np.array(mat['EEG']['data'][0][0])
     time=np.array(mat['EEG']['times'][0][0])
     events = mat['EEG']['event'][0][0][0]

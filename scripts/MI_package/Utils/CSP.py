@@ -8,7 +8,7 @@ import scipy.linalg as la
 # otherwise there can be no spatial filtering since the trials cannot be compared
 def CSP(*tasks):
 	if len(tasks) < 2:
-		print "Must have at least 2 tasks for filtering."
+		print("Must have at least 2 tasks for filtering.")
 		return (None,) * len(tasks)
 	else:
 		filters = ()
